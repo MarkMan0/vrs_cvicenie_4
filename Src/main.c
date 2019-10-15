@@ -25,7 +25,7 @@
 void SystemClock_Config(void);
 uint8_t check_button_state(GPIO_TypeDef* PORT, uint8_t PIN);
 
-uint8_t interrupt = 0;
+volatile uint8_t interrupt = 0;
 
 int main(void)
 {
@@ -38,24 +38,11 @@ int main(void)
   SystemClock_Config();
 
   /*EXTI configuration*/
-  //NVIC_SetPriority(EXTI3_IRQn, 2);
-  //NVIC_EnableIRQ(EXTI3_IRQn);
   //Set interrupt priority and enable EXTI
-  NVIC->IP[9] |= 2 << 4;
-  NVIC->ISER[0] |= 1 << 9;
 
   NVIC_SetPriority(EXTI9_5_IRQn, 2);
   NVIC_EnableIRQ(EXTI9_5_IRQn);
 
-
-
-  /*set EXTI source PA3*/
-  SYSCFG->EXTICR[0] &= ~(0xFU << 12U);
-  //Enable interrupt from EXTI line 3
-  EXTI->IMR |= EXTI_IMR_MR3;
-  //Set EXTI trigger to falling edge
-  EXTI->RTSR &= ~(EXTI_IMR_MR3);
-  EXTI->FTSR |= EXTI_IMR_MR3;
 
   //EXTI interrupt EXTI line 6
   SYSCFG->EXTICR[1] &= ~(SYSCFG_EXTICR2_EXTI6); //set 0
@@ -65,11 +52,6 @@ int main(void)
   EXTI->RTSR &= ~(EXTI_RTSR_RT6);	//no rising trigger
   EXTI->FTSR |= EXTI_FTSR_FT6;		//falling trigger
 
-  /*GPIO configuration, PA3*/
-  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-  GPIOA->MODER &= ~(GPIO_MODER_MODER3);
-  GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR3);
-  GPIOA->PUPDR |= GPIO_PUPDR_PUPDR3_0;
 
   /*GPIO configuration, PB3*/
   RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
@@ -167,19 +149,6 @@ uint8_t check_button_state(GPIO_TypeDef* PORT, uint8_t PIN)
 	}
 }
 
-
-void EXTI3_IRQHandler(void)
-{
-
-	EXTI->PR |= (EXTI_PR_PIF3);
-	return;
-	if(check_button_state(GPIOA, 3))
-	{
-		interrupt ^= 1;
-	}
-
-	//Clear pending register flag
-}
 
 void EXTI9_5_IRQHandler(void) {
 	if(check_button_state(GPIOB, 6)) {
