@@ -48,9 +48,11 @@ int main(void)
   SYSCFG->EXTICR[1] &= ~(SYSCFG_EXTICR2_EXTI6); //set 0
   SYSCFG->EXTICR[1] |= (0x1U << (8U));	//source to PB6
 
-  EXTI->IMR |= EXTI_IMR_MR6;
+  EXTI->IMR |= EXTI_IMR_MR6;		//interrupt not masked - want to call the handler - not ignored
+  //EXTI->EMR &= ~(EXTI_EMR_EM6);		//event handler masked - ignore it
   EXTI->RTSR &= ~(EXTI_RTSR_RT6);	//no rising trigger
-  EXTI->FTSR |= EXTI_FTSR_FT6;		//falling trigger
+  EXTI->FTSR |= EXTI_FTSR_FT6;		//falling trigger	- turn on
+
 
 
   /*GPIO configuration, PB3*/
